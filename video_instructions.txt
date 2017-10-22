@@ -1,0 +1,16 @@
+This first vector is the prediction measurements between one particular
+particle and all of the map landmarks within sensor range.
+
+The first thing you'll need to do here is to predict measurements to all the
+map landmarks within sensor range for each particle.
+
+This function will perform nearest neighbor data association and assign
+each sensor observation the map landmark ID associated with it.
+
+Once you have these predicted landmark measurements, you can use the data
+association function you've implemented to associate the sensor measurements
+to map landmarks.
+You'll need these associations to calculate the new weight of each particle
+by using the multivariate Gaussian probability density function
+Finally, you'll have to normalize these weights so that they'll be in range
+0 to 1.
