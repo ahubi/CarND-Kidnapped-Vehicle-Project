@@ -12,7 +12,10 @@
 #include <fstream>
 #include <math.h>
 #include <vector>
+#include <iostream>
 #include "map.h"
+
+using namespace std;
 
 // for portability of M_PI (Vis Studio, MinGW, etc.)
 #ifndef M_PI
@@ -47,6 +50,43 @@ struct LandmarkObs {
 	double x;			// Local (vehicle coordinates) x position of landmark observation [m]
 	double y;			// Local (vehicle coordinates) y position of landmark observation [m]
 };
+
+/*
+ * @description: Calculates prediction for bicycle model
+ * @param: x, y - coordinates in meters
+ * @param: v - velocity in m/s
+ * @param: theta - heading direction in radians
+ * @param: yawrate - yaw rate in rad/s
+ * @param: dt - delta time in seconds
+ * @return: vector(x, y, theta)
+ */
+inline vector<double> CalculatePrediction(const double x, const double y,
+                                   const double v, const double theta,
+                                   const double yawrate, const double dt) {
+  vector<double> ret = vector<double>(3);
+  double vyaw = v / yawrate;
+  double yawdt = yawrate * dt;
+  ret[0] = x + vyaw * (sin(theta + yawdt) - sin(theta));
+  ret[1] = y + vyaw * (cos(theta) - cos(theta + yawdt));
+  ret[2] = theta + yawdt;
+  return ret;
+}
+
+/*
+ * @description: Homogenous Transform
+ * @param: xp, yp - coordinates of particle
+ * @param: xc, yc - observed coordinates
+ * @param: theta - heading direction of particle in rad
+ * @return: transformed vector(x,y)
+ */
+inline vector<double> HomogenousTransform(const double xp, const double yp,
+                                   const double xc, const double yc,
+                                   const double theta = -M_PI / 2) {
+  vector<double> ret = vector<double>(2);
+  ret[0] = xp + cos(theta) * xc - sin(theta) * yc;
+  ret[1] = yp + sin(theta) * xc + cos(theta) * yc;
+  return ret;
+}
 
 /*
  * Computes the Euclidean distance between two 2D points.
