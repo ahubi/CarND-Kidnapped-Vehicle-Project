@@ -39,6 +39,9 @@ struct ground_truth {
 	double x;		// Global vehicle x position [m]
 	double y;		// Global vehicle y position
 	double theta;	// Global vehicle yaw [rad]
+  inline void print() const{
+    cout << "x= " << x << " y= " << y << " theta= " << theta << endl;
+  };
 };
 
 /*
@@ -49,6 +52,13 @@ struct LandmarkObs {
 	int id;				// Id of matching landmark in the map.
 	double x;			// Local (vehicle coordinates) x position of landmark observation [m]
 	double y;			// Local (vehicle coordinates) y position of landmark observation [m]
+	inline void print() const{
+	  cout << "id= " << id << " x= " << x << " y= " << y << endl;
+	};
+
+	bool operator== (const LandmarkObs& other){
+	  return (id == other.id && x == other.x && y == other.y);
+	};
 };
 
 /*
@@ -95,7 +105,33 @@ inline vector<double> HomogenousTransform(const double xp, const double yp,
  * @output Euclidean distance between two 2D points
  */
 inline double dist(double x1, double y1, double x2, double y2) {
-	return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+  return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+}
+
+
+/*
+ * @description: Calculates Particle Weight
+ * @param: x, y - observed coordinates
+ * @param: xlm, ylm - coordinates to nearest land mark
+ * @param: std_x, std_y standard deviation for x and y
+ * @return: double Multivariate-Gaussian probability
+ */
+inline double CalculatePWeight(const double x, const double y, const double xlm,
+                        const double ylm, const double std_x,
+                        const double std_y) {
+
+  double d = dist(x, y, xlm, ylm);
+
+  //cout << __func__ <<" x = " << x << " y = " << y << " xlm= " << xlm << " ylm= " << ylm << " distance " << d << " m" << endl;
+
+  double c1 = 1 / (2 * M_PI * std_x * std_y);
+  double c2 = (pow(x - xlm, 2)) / (2 * pow(std_x, 2));
+  double c3 = (pow(y - ylm, 2)) / (2 * pow(std_y, 2));
+
+  double exponent = c2 + c3;
+  double ret = c1 * exp(-exponent);
+  //cout << __func__ <<" c1 = " << c1 << " c2 = " << c2 << " exponent " << exponent << " w " << ret << endl;
+  return ret;
 }
 
 inline double * getError(double gt_x, double gt_y, double gt_theta, double pf_x, double pf_y, double pf_theta) {
