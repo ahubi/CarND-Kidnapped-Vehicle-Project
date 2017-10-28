@@ -62,20 +62,15 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
   //  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
   //  http://www.cplusplus.com/reference/random/default_random_engine/
   default_random_engine gen;
+  normal_distribution<double> dist_x(0, std_pos[0]);
+  normal_distribution<double> dist_y(0, std_pos[1]);
+  normal_distribution<double> dist_theta(0, std_pos[2]);
   vector<double> x_y_t;
   for(auto &p : particles){
     x_y_t = CalculatePrediction(p.x, p.y, velocity, p.theta, yaw_rate, delta_t);
-    if(isnan(x_y_t[0]) || isnan(x_y_t[1]) || isnan(x_y_t[2])){
-      cout << "WARNING prediction delivers nan values -> don't take them" << endl;
-      p.print();
-    }else{
-      normal_distribution<double> dist_x(x_y_t[0], std_pos[0]);
-      normal_distribution<double> dist_y(x_y_t[1], std_pos[1]);
-      normal_distribution<double> dist_theta(x_y_t[2], std_pos[2]);
-      p.x     = dist_x(gen);
-      p.y     = dist_y(gen);
-      p.theta = dist_theta(gen);
-    }
+    p.x     = x_y_t[0] + dist_x(gen);
+    p.y     = x_y_t[1] + dist_y(gen);
+    p.theta = x_y_t[2] + dist_theta(gen);
   }
   //print_particles(particles, "--- predicted particles ---");
 }
