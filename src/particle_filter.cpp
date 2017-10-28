@@ -121,20 +121,10 @@ void ParticleFilter::updateWeights(double sensor_range,
       }
       //Calculate weight for particle
       double cw = CalculatePWeight(TOBS[0], TOBS[1], nearest_neighbor.x_f, nearest_neighbor.y_f, std_landmark[0], std_landmark[1]);
-      if(isnan(cw)){
-        cout << "WARNING calculated weight is" << cw << endl;
-        cout << "OBSR(" << obs.x << "," << obs.y << ")->"
-             << "PART(" << p.x << "," << p.y << "," << p.theta << ")->"
-             << "TOBS(" << TOBS[0] << "," << TOBS[1] << ")->"
-             << "LANM(" << nearest_neighbor.x_f << "," << nearest_neighbor.y_f << "," << ")" << endl;
-      }
-      else{
-        //Multiply weights for particle for all observations
-        p.weight *= cw;
-        p.associations.push_back(nearest_neighbor.id_i);
-        p.sense_x.push_back(nearest_neighbor.x_f);
-        p.sense_y.push_back(nearest_neighbor.y_f);
-      }
+      p.weight *= cw;
+      p.associations.push_back(nearest_neighbor.id_i);
+      p.sense_x.push_back(nearest_neighbor.x_f);
+      p.sense_y.push_back(nearest_neighbor.y_f);
     }
     weights.push_back(p.weight);
   }
