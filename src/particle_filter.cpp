@@ -62,19 +62,16 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
   //  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
   //  http://www.cplusplus.com/reference/random/default_random_engine/
   default_random_engine gen;
-
-  vector<double> x_y_theta_pred;
+  vector<double> x_y_t;
   for(auto &p : particles){
-    x_y_theta_pred = CalculatePrediction(p.x, p.y, velocity, p.theta, yaw_rate, delta_t);
-    if(isnan(x_y_theta_pred[0]) ||
-        isnan(x_y_theta_pred[1]) ||
-        isnan(x_y_theta_pred[2])){
-      cout << "WARNING prediction deliveres nan values -> don't take them" << endl;
+    x_y_t = CalculatePrediction(p.x, p.y, velocity, p.theta, yaw_rate, delta_t);
+    if(isnan(x_y_t[0]) || isnan(x_y_t[1]) || isnan(x_y_t[2])){
+      cout << "WARNING prediction delivers nan values -> don't take them" << endl;
       p.print();
     }else{
-      normal_distribution<double> dist_x(x_y_theta_pred[0], std_pos[0]);
-      normal_distribution<double> dist_y(x_y_theta_pred[1], std_pos[1]);
-      normal_distribution<double> dist_theta(x_y_theta_pred[2], std_pos[2]);
+      normal_distribution<double> dist_x(x_y_t[0], std_pos[0]);
+      normal_distribution<double> dist_y(x_y_t[1], std_pos[1]);
+      normal_distribution<double> dist_theta(x_y_t[2], std_pos[2]);
       p.x     = dist_x(gen);
       p.y     = dist_y(gen);
       p.theta = dist_theta(gen);
@@ -117,15 +114,17 @@ void ParticleFilter::updateWeights(double sensor_range,
       double p_min_distance = 999999;
       //perform closest neighbor search
       for(const auto& lm : map_landmarks.landmark_list){
+        //Consider only particle which are in sensor range
         if (dist(p.x, p.y, lm.x_f, lm.y_f) < sensor_range){
           double d = dist(TOBS[0], TOBS[1], lm.x_f, lm.y_f);
+          //Take landmark with smallest distance
           if(d < p_min_distance){
             p_min_distance = d;
             nearest_neighbor = lm;
           }
         }
       }
-      //Multiply weights
+      //Calculate weight for particle
       double cw = CalculatePWeight(TOBS[0], TOBS[1], nearest_neighbor.x_f, nearest_neighbor.y_f, std_landmark[0], std_landmark[1]);
       if(isnan(cw)){
         cout << "WARNING calculated weight is" << cw << endl;
@@ -135,6 +134,7 @@ void ParticleFilter::updateWeights(double sensor_range,
              << "LANM(" << nearest_neighbor.x_f << "," << nearest_neighbor.y_f << "," << ")" << endl;
       }
       else{
+        //Multiply weights for particle for all observations
         p.weight *= cw;
         p.associations.push_back(nearest_neighbor.id_i);
         p.sense_x.push_back(nearest_neighbor.x_f);
