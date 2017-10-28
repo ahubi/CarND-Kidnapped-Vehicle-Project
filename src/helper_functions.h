@@ -121,8 +121,8 @@ inline double CalculatePWeight(const double x, const double y, const double xlm,
                         const double std_y) {
 
   double d = dist(x, y, xlm, ylm);
-
-  //cout << __func__ <<" x = " << x << " y = " << y << " xlm= " << xlm << " ylm= " << ylm << " distance " << d << " m" << endl;
+  if(d < 0 || d > 50)
+    cout << __func__ <<" x = " << x << " y = " << y << " xlm= " << xlm << " ylm= " << ylm << " distance " << d << " m" << endl;
 
   double c1 = 1 / (2 * M_PI * std_x * std_y);
   double c2 = (pow(x - xlm, 2)) / (2 * pow(std_x, 2));
@@ -130,7 +130,10 @@ inline double CalculatePWeight(const double x, const double y, const double xlm,
 
   double exponent = c2 + c3;
   double ret = c1 * exp(-exponent);
-  //cout << __func__ <<" c1 = " << c1 << " c2 = " << c2 << " exponent " << exponent << " w " << ret << endl;
+
+  if(d < 0 || d > 50)
+    cout << __func__ <<" c1 = " << c1 << " c2 = " << c2 << " exponent " << exponent << " w " << ret << endl;
+
   return ret;
 }
 
